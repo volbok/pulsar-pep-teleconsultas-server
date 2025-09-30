@@ -41,11 +41,9 @@ socket_all_clients.on('connection', (socket) => {
     arrayusers.push(result);
     console.log(result.codigo);
     console.log(arrayusers.map(users => users.tipo));
-    // socket.emit('paciente_conectado');
     console.log('DISPAROU ETAPA 02: download dados peer-paciente');
-    console.log(arrayusers.filter(item => item.codigo == result.codigo && item.tipo == 'paciente').map(users => users.tipo));
     arrayusers.filter(item => item.codigo == result.codigo && item.tipo == 'paciente').map(item => {
-      socket_all_clients.emit('dados peer-paciente', { data: item.data, mensagem: 'signal do peer-paciente devolvido ao peer-médico.' });
+      socket_all_clients.emit('dados peer-paciente', item.data);
     })
 
   });
