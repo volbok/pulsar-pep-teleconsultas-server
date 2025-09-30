@@ -9,8 +9,8 @@ const cors = require('cors');
 
 const socket_all_clients = require('socket.io')(http, {
   cors: {
-    origin: "http://localhost:3000"
-    // origin: ["https://pulsar-consultorios.netlify.app", "https://pulsarpep.com"]
+    // origin: "http://localhost:3000"
+    origin: ["https://pulsar-consultorios.netlify.app", "https://pulsarpep.com"]
   }
 });
 
