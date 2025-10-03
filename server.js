@@ -26,12 +26,11 @@ socket_all_clients.on('connection', (socket) => {
   // recebendo dados do peer-medico. 
   socket.on('upload dados peer-medico', (result) => {
     console.log('DADOS DO PEER-MÉDICO RECEBIDO');
+    codigo = result.codigo;
     let newarrayusers = []
     arrayusers.filter(users => users.codigo != result.codigo).map(item => newarrayusers.push(item));
     arrayusers = newarrayusers;
     arrayusers.push(result);
-    console.log(arrayusers.map(users => users.tipo));
-    codigo = result.codigo;
     console.log(codigo);
   });
 
@@ -39,13 +38,10 @@ socket_all_clients.on('connection', (socket) => {
   socket.on('upload dados peer-paciente', (result) => {
     console.log('DADOS DO PEER-PACIENTE RECEBIDO');
     arrayusers.push(result);
-    console.log(result.codigo);
-    console.log(arrayusers.map(users => users.tipo));
     console.log('DISPAROU ETAPA 02: download dados peer-paciente');
     arrayusers.filter(item => item.codigo == result.codigo && item.tipo == 'paciente').map(item => {
       socket_all_clients.emit('dados peer-paciente', item.data);
     })
-
   });
 
   /*
@@ -54,8 +50,6 @@ socket_all_clients.on('connection', (socket) => {
   */
   socket.on('download dados peer-medico', (codigo) => {
     console.log('DISPAROU ETAPA 01: download dados peer-medico');
-    console.log('USUÁRIOS CONECTADOS: ' + arrayusers.length);
-    console.log(arrayusers.map(users => users.tipo));
     arrayusers.filter(item => item.codigo == codigo && item.tipo == 'medico').slice(0, 1).map(item => {
       socket_all_clients.emit('dados peer-medico', item.data);
     })
@@ -72,17 +66,21 @@ socket_all_clients.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log(socket.id + '🔥: DESCONECTADO');
     console.log('ELIMINAR USUÁRIOS COM O CÓDIGO ' + codigo);
+    let newarrayusers = []
+    arrayusers.filter(users => users.codigo != codigo).map(item => newarrayusers.push(item));
+    arrayusers = newarrayusers;
+    console.log(arrayusers.map(users => users.tipo));
   });
 
   // desconectando e eliminando o usuário da array de conexões.
   socket.on('desconectar', (codigo) => {
     console.log('SOLICITADA A DESCONEXÃO');
-    console.log(codigo);
+    socket.disconnect(true);
     let newarrayusers = []
     arrayusers.filter(users => users.codigo != codigo).map(item => newarrayusers.push(item));
     arrayusers = newarrayusers;
     console.log(arrayusers.map(users => users.tipo));
-  })
+  });
 
 });
 
