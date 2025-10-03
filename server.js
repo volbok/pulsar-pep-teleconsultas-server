@@ -23,7 +23,11 @@ socket_all_clients.on('connection', (socket) => {
   // indicando a conexão do participante ao server.
   console.log(`⚡: ${socket.id} CONECTADO`);
 
-  // recebendo dados do peer-medico. 
+  /*
+  recebendo dados do peer-medico e eliminando eventuais usuários conectados com o código de atendimento
+  não eliminados da array (pool de usuários) anteriormente (isso pode acontecer quando o socket é desconectado ao fechar
+  a guia da aplicação).
+  */
   socket.on('upload dados peer-medico', (result) => {
     console.log('DADOS DO PEER-MÉDICO RECEBIDO');
     codigo = result.codigo;
@@ -39,7 +43,7 @@ socket_all_clients.on('connection', (socket) => {
     console.log('DADOS DO PEER-PACIENTE RECEBIDO');
     arrayusers.push(result);
     console.log('DISPAROU ETAPA 02: download dados peer-paciente');
-    arrayusers.filter(item => item.codigo == result.codigo && item.tipo == 'paciente').map(item => {
+    arrayusers.filter(user => user.codigo == result.codigo && user.tipo == 'paciente').map(item => {
       socket_all_clients.emit('dados peer-paciente', item.data);
     })
   });
@@ -50,14 +54,14 @@ socket_all_clients.on('connection', (socket) => {
   */
   socket.on('download dados peer-medico', (codigo) => {
     console.log('DISPAROU ETAPA 01: download dados peer-medico');
-    arrayusers.filter(item => item.codigo == codigo && item.tipo == 'medico').slice(0, 1).map(item => {
+    arrayusers.filter(user => user.codigo == codigo && user.tipo == 'medico').slice(0, 1).map(item => {
       socket_all_clients.emit('dados peer-medico', item.data);
     })
   });
 
   socket.on('download dados peer-paciente', (codigo) => {
     console.log('DISPAROU ETAPA 02: download dados peer-paciente');
-    arrayusers.filter(item => item.codigo == codigo && item.tipo == 'paciente').map(item => {
+    arrayusers.filter(user => user.codigo == codigo && user.tipo == 'paciente').map(item => {
       socket_all_clients.emit('dados peer-paciente', { data: item.data, mensagem: 'signal do peer-paciente devolvido ao peer-médico.' });
     })
   })
@@ -65,21 +69,18 @@ socket_all_clients.on('connection', (socket) => {
   // escutando a desconexão do usuário.
   socket.on('disconnect', () => {
     console.log(socket.id + '🔥: DESCONECTADO');
-    console.log('ELIMINAR USUÁRIOS COM O CÓDIGO ' + codigo);
-    let newarrayusers = []
-    arrayusers.filter(users => users.codigo != codigo).map(item => newarrayusers.push(item));
-    arrayusers = newarrayusers;
-    console.log(arrayusers.map(users => users.tipo));
   });
 
   // desconectando e eliminando o usuário da array de conexões.
   socket.on('desconectar', (codigo) => {
     console.log('SOLICITADA A DESCONEXÃO');
-    socket.disconnect(true);
+    console.log('CODIGO A DESCONECTAR: ' + codigo);
+    console.log('SOCKET ID A DESCONECTAR: ' + socket.id);
+    console.log('USUÁRIO A DESCONECTAR: ' + arrayusers.filter(user => user.id == socket.id).map(user => user.tipo));
     let newarrayusers = []
-    arrayusers.filter(users => users.codigo != codigo).map(item => newarrayusers.push(item));
+    arrayusers.filter(user => user.id != socket.id).map(item => newarrayusers.push(item));
     arrayusers = newarrayusers;
-    console.log(arrayusers.map(users => users.tipo));
+    console.log('USUÁRIOS CONECTADOS: ' + arrayusers.length);
   });
 
 });
