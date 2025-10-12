@@ -41,11 +41,13 @@ socket_all_clients.on('connection', (socket) => {
   // recebendo dados do peer-paciente.
   socket.on('upload dados peer-paciente', (result) => {
     console.log('DADOS DO PEER-PACIENTE RECEBIDO');
+    console.log(result);
     arrayusers.push(result);
+    console.log(arrayusers.map(user => user.tipo));
     console.log('DISPAROU ETAPA 02: download dados peer-paciente');
     arrayusers.filter(user => user.codigo == result.codigo && user.tipo == 'paciente').map(item => {
       socket_all_clients.emit('dados peer-paciente', item.data);
-    })
+    });
   });
 
   /*
